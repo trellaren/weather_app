@@ -7,21 +7,33 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
+  String currentLocation = 'Location services not enabled.';
+  @override
+  void initState() {
+    super.initState();
+    getLocation();
+  }
 
   void getLocation() async {
-    Position position = await Geolocator().getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
+    Geolocator geolocator = Geolocator()..forceAndroidLocationManager = true;
+    Position position = await geolocator
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
     print(position);
+    currentLocation = position.toString();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: RaisedButton(
-          onPressed: () {
-            getLocation();
-          },
-          child: Text('Get Location'),
+      body: Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              currentLocation,
+            ),
+          ],
         ),
       ),
     );
