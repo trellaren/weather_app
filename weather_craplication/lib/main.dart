@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// Locals
 import 'package:weather_craplication/screens/loading_screen.dart';
 
 void main() => runApp(MyApp());

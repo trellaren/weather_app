@@ -1,13 +1,54 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:weather_craplication/screens/city_screen.dart';
+// Locals
 import 'package:weather_craplication/utilities/constants.dart';
+import 'package:weather_craplication/services/weather.dart';
+import 'package:weather_craplication/screens/city_screen.dart';
 
 class LocationScreen extends StatefulWidget {
+  LocationScreen({this.locationWeather});
+  final locationWeather;
   @override
   _LocationScreenState createState() => _LocationScreenState();
 }
 
 class _LocationScreenState extends State<LocationScreen> {
+  WeatherModel weather = WeatherModel();
+  String city;
+  String weatherIcon;
+  int temperature;
+  int feelsLikeInt;
+  double wind;
+  double feelsLike;
+
+  @override
+  void initState() {
+    super.initState();
+    updateUI(widget.locationWeather);
+  }
+
+  void updateUI(dynamic weatherData) {
+    setState(() {
+      if (weatherData == null) {
+        temperature = 0;
+        weatherIcon = 'Error';
+        city = 'Unable to find current location';
+        feelsLikeInt = 0;
+        wind = 0;
+        return;
+      }
+      var condition = weatherData['weather'][0]['id'];
+      city = weatherData['name'];
+      double temp = weatherData['main']['temp'];
+      temperature = temp.toInt();
+      double feelsLike = weatherData['main']['feels_like'];
+      feelsLikeInt = feelsLike.toInt();
+      wind = weatherData['wind']['speed'];
+      weatherIcon = weather.getWeatherIcon(condition);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,69 +57,88 @@ class _LocationScreenState extends State<LocationScreen> {
           image: DecorationImage(
             image: AssetImage('images/location_background.jpg'),
             fit: BoxFit.cover,
-            colorFilter:  ColorFilter.mode(
-              Colors.white.withOpacity(0.8), BlendMode.dstATop),
-            ),
+            colorFilter: ColorFilter.mode(
+                Colors.white.withOpacity(0.8), BlendMode.dstATop),
           ),
-          constraints: BoxConstraints.expand(),
-          child: SafeArea(
+        ),
+        constraints: BoxConstraints.expand(),
+        child: SafeArea(
             child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: <Widget>[
-                    FlatButton(
-                      onPressed: () {},
-                      child: Icon(
-                        Icons.near_me,
-                        size: 50.0
-                      ),
-                    ),
-                    FlatButton(
-                      onPressed: () {},
-                      child: Icon(
-                        Icons.location_city,
-                        size: 50.0,
-                      ),
-                    ),
-                  ],
+                FlatButton(
+                  onPressed: () async {
+                    var weatherData = await weather.getLocationWeather();
+                    updateUI(weatherData);
+                  },
+                  child: Icon(Icons.near_me, size: 50.0),
                 ),
-                Padding(
-                  padding: EdgeInsets.only(left: 15.0),
-                  child: Row(
-                    children: <Widget>[
-                      Text(
-                        '32°c',
-                        style: kTempTextStyle,
+                FlatButton(
+                  onPressed: () async{
+                    var typedName = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) {
+                          return CityScreen();
+                        },
                       ),
-                      Text(
-                        '☀',
-                        style: kConditionTextStyle,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(right: 15.0),
-                  child: Text(
-                    'It\'s 🍦 time in San Francisco!',
-                    textAlign: TextAlign.right,
-                    style: kMessageTextStyle,
+                    );
+                    if (typedName != null) {
+                      var weatherData = await weather.getCityWeather(typedName);
+                      updateUI(weatherData);
+                    }
+                  },
+                  child: Icon(
+                    Icons.location_city,
+                    size: 50.0,
                   ),
                 ),
               ],
-            )
-        ),
+            ),
+            Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    '$city',
+                    textAlign: TextAlign.right,
+                    style: kMessageTextStyle,
+                  ),
+                  Text(
+                    'Current Temp: $temperature °f',
+                    style: kTempTextStyle,
+                  ),
+                  Text(
+                    'Feels like: $feelsLikeInt °f',
+                    style: kTempTextStyle,
+                  ),
+                  Text(
+                    'Wind speed: $wind mph',
+                    style: kTempTextStyle,
+                  ),
+                  Text(
+                    '$weatherIcon',
+                    style: kConditionTextStyle,
+                  ),
+                ]),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[],
+            ),
+          ],
+        )),
       ),
     );
   }
 }
-
-//condition = decodedData['weather'][0]['id'];
-//city = decodedData['name'];
-//temp = decodedData['main']['temp'];
-//feelsLike = decodedData['main']['feels_like'];
-//wind = decodedData['wind']['speed'];
-//weatherDescrip = decodedData['weather'][0]['description'];
