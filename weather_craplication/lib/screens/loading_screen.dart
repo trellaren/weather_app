@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:weather_craplication/services/location.dart';
-import 'package:weather_craplication/services/networking.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+// Locals
+import 'package:weather_craplication/screens/location_screen.dart';
+import 'package:weather_craplication/services/weather.dart';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -8,91 +10,30 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-  String applicationId = '6a9d749847b5b9671825adb143d60d13';
-  String weatherDescrip;
-  String city;
-  int condition;
-  double currentLatitude;
-  double currentLongitude;
-  double temp;
-  double wind;
-  double feelsLike;
+
   @override
   void initState() {
     super.initState();
     getLocationData();
-
   }
 
   void getLocationData() async {
-    Location currentLocation = Location();
-    await currentLocation.getCurrentLocation();
-    currentLatitude = currentLocation.latitude;
-    currentLongitude = currentLocation.longitude;
+    var weatherData = await WeatherModel().getLocationWeather();
 
-    NetworkHelper networkHelper = NetworkHelper('http://api.openweathermap.org/data/2.5/weather?units=imperial&lat=$currentLatitude&lon=$currentLongitude&appid=$applicationId');
-
-    var weatherData = await networkHelper.getData();
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return LocationScreen(locationWeather: weatherData,);
+    }));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return Scaffold(
+      body: Center(
+        child: SpinKitDoubleBounce(
+          color: Colors.white,
+          size: 100.0,
+        )
+      ),
+    );
   }
 }
-
-//body: Container(
-//padding: const EdgeInsets.all(16.0),
-//child: Column(
-//mainAxisAlignment: MainAxisAlignment.center,
-//crossAxisAlignment: CrossAxisAlignment.center,
-//children: <Widget>[
-//Row(
-//children: <Widget>[
-//Flexible(
-//child: Text(
-//'City: $city',
-//),
-//),
-//],
-//),
-//Row(
-//children: <Widget>[
-//Flexible(
-//child: Text(
-//'Current Temp: $temp',
-////                  'Long: $currentLongitude.toString()',
-//),
-//)
-//],
-//),
-//Row(
-//children: <Widget>[
-//Flexible(
-//child: Text(
-//'Feels Like: $feelsLike',
-//)
-//)
-//],
-//),
-//Row(
-//children: <Widget>[
-//Flexible(
-//child: Text(
-//'Wind Speed: $wind',
-//),
-//)
-//],
-//),
-//Row(
-//children: <Widget>[
-//Flexible(
-//child: Text(
-//'Description: $weatherDescrip',
-//)
-//)
-//],
-//),
-//],
-//),
-//),
